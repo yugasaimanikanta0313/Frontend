@@ -1,0 +1,36 @@
+name: CI-CD Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: 3.6.94.25
+          username: ec2-user
+          password: 12345678
+          script: |
+            echo "Deploying backend..."
+            cd /home/ec2-user/CI-CD
+            ./mvnw clean package -DskipTests
+            docker build -t spring_backend .
+            docker stop spring_backend || true
+            docker rm spring_backend || true
+            docker run -d -p 8080:8080 --env-file .env --name spring_backend spring_backend
+
+            echo "Deploying frontend..."
+            cd /home/ec2-user/Frontend
+            docker build -t react_frontend .
+            docker stop react_frontend || true
+            docker rm react_frontend || true
+            docker run -d -p 80:80 --name react_frontend react_frontend
