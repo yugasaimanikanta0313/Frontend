@@ -1,4 +1,4 @@
-name: Frontend Deployment
+name: CI-CD Deployment
 
 on:
   push:
@@ -13,21 +13,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Deploy frontend to EC2 (password)
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.8
         with:
-          host: ${{ secrets.EC2_HOST }}
+          host: 3.6.94.25
           username: ec2-user
-          password: ${{ secrets.EC2_PASSWORD }}
+          password: 12345678
           script: |
-            echo "=== Updating code ==="
+            echo "Deploying backend..."
+            cd /home/ec2-user/CI-CD
+            ./mvnw clean package -DskipTests
+            docker build -t spring_backend .
+            docker stop spring_backend || true
+            docker rm spring_backend || true
+            docker run -d -p 8080:8080 --env-file .env --name spring_backend spring_backend
+
+            echo "Deploying frontend..."
             cd /home/ec2-user/Frontend
-            git pull origin main
-
-            echo "=== Building new Docker image ==="
-            docker build --no-cache -t react_frontend .
-
-            echo "=== Restarting container ==="
+            docker build -t react_frontend .
             docker stop react_frontend || true
             docker rm react_frontend || true
             docker run -d -p 80:80 --name react_frontend react_frontend
