@@ -93,7 +93,7 @@ function Login() {
           <div className="h-2 bg-gradient-to-r from-[#4CAF50] to-[#81C784]"></div>
 
           <div className="p-6 pb-4">
-            <h2 className="text-2xl font-bold text-[#1B5E20]">come</h2>
+            <h2 className="text-2xl font-bold text-[#1B5E20]">welcome</h2>
             <p className="text-sm text-gray-600">
               Sign in to access your account
             </p>
